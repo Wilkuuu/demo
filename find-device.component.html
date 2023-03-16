@@ -1,0 +1,161 @@
+<ng-container   *ngIf="availableDevices.length <= 0">
+  <div class="row justify-content-md-center">
+    <div class="col-md-4">
+      <h1>No device found</h1>
+    </div>
+  </div>
+
+</ng-container>
+
+<ng-container  >
+<div class="row " >
+  <div class="col"></div>
+  <div class="col d-none d-lg-block">
+    <div class="card">
+      <div class="card-body">
+        <div class="scanner-shell">
+          <zxing-scanner [torch]="torchEnabled" [(device)]="currentDevice" (scanSuccess)="onCodeResult($event)"
+                         [formats]="formatsEnabled" [tryHarder]="tryHarder"
+                         (permissionResponse)="onHasPermission($event)"
+                         (camerasFound)="onCamerasFound($event)"
+                         (torchCompatible)="onTorchCompatible($event)"></zxing-scanner>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col d-none d-lg-block">
+
+  </div>
+</div>
+<div class="row ">
+  <div class="col"></div>
+  <div class="col d-none d-lg-block">
+    <label >Device</label>
+    <select class="form-control" (change)="onDeviceSelectChange($event.target.value)">
+    <option value="" [selected]="!currentDevice">No Device Selected</option>
+    <option *ngFor="let device of availableDevices" [value]="device.deviceId"
+            [selected]="currentDevice && device.deviceId === currentDevice.deviceId">{{device.label}}</option>
+  </select>
+  </div>
+  <div class="col"></div>
+</div>
+
+<div class="row d-block d-sm-block d-lg-none d-sm-none" >
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <zxing-scanner [torch]="torchEnabled" [(device)]="currentDevice" (scanSuccess)="onCodeResult($event)"
+                       [formats]="formatsEnabled" [tryHarder]="tryHarder"
+                       (permissionResponse)="onHasPermission($event)"
+                       (camerasFound)="onCamerasFound($event)"
+                       (torchCompatible)="onTorchCompatible($event)"></zxing-scanner>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+    </div>
+    <div class="col">
+    </div>
+  </div>
+</div>
+<div class="row d-block d-sm-block d-lg-none d-sm-none"  >
+  <div class="col"></div>
+  <div class="col">
+    <label >Device</label>
+    <select class="form-control" (change)="onDeviceSelectChange($event.target.value)">
+      <option value="" [selected]="!currentDevice">No Device Selected</option>
+      <option *ngFor="let device of availableDevices" [value]="device.deviceId"
+              [selected]="currentDevice && device.deviceId === currentDevice.deviceId">{{device.label}}</option>
+    </select>
+  </div>
+  <div class="col"></div>
+</div>
+
+</ng-container>
+
+
+
+<ng-template  #eventModal let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Info</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col">
+        <p align="center">Device info</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <p>Device: {{device.name}}</p>
+          </li>
+          <li class="list-group-item">
+            <p>Company: {{device.company.name}}</p>
+          </li>
+          <li class="list-group-item">
+            <p>Status: {{device.status.name}}</p>
+          </li>
+          <li class="list-group-item">
+            <p>Date in: {{mainService.displayDate(device.dateIn)}}</p>
+          </li>
+          <li class="list-group-item">
+            <p>Last status change: {{mainService.displayDate(device.dateOut)}}</p>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+    <ng-container *ngIf="device != null">
+      <div class="row" >
+        <div class="col">
+          <button [hidden]="changeStatusButton" class="btn btn-danger btn-block" (click)="remove()">Change status</button>
+        </div>
+        <div class="col">
+          <button class="btn btn-success btn-block" [routerLink]="['/device/' + device.serialNumber]" (click)="closeModal()">Check</button>
+        </div>
+      </div>
+      <div [hidden]="!changeStatusButton" class="col" >
+        <form role="form"  #updateDevice="ngForm" (ngSubmit)="onSubmit(updateDevice)" autocomplete="off">
+          <div class="row">
+            <label for="status">Status</label>
+            <select class="form-control" id="status" [(ngModel)]="device.status" name="status">
+              <option *ngFor="let status of deviceStatus"  [value]="status.idx">{{status.name}}</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" [(ngModel)]="device.description" rows="3"
+                      name="description"></textarea>
+          </div>
+          <button class="btn btn-warning btn-sm" type="submit">Update</button>
+        </form>
+      </div>
+    </ng-container>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="closeModal()">Close</button>
+  </div>
+</ng-template>
+
+<ng-template #errorModal let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Choose options</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <h4>Error, please try again later</h4>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="closeModal()">Close</button>
+  </div>
+</ng-template>
+
